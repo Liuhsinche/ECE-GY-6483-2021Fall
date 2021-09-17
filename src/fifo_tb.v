@@ -1,14 +1,14 @@
-`define BUF_WIDTH   4     //The buffer width is 3+1£¬
+`define BUF_WIDTH   4     //The buffer width is 3+1Â£Â¬
 
 module tb_fifo;
 	reg clk,rst_n;
 	reg wr_en,rd_en;
 	reg [7:0] buf_in;		     	// data input to be pushed to buffer
 	wire [7:0] buf_out;       		// port to output the data using pop.
-    wire buf_empty,buf_full;  		// buffer empty and full indication 
+	wire buf_empty,buf_full;  		// buffer empty and full indication 
 	wire [`BUF_WIDTH-1:0] fifo_cnt;	// number of data pushed in to buffer 
 	
-	fifo dut(clk,rst_n,buf_in,buf_out,wr_en,rd_en,buf_empty,buf_full,fifo_cnt);
+	fifo dut(clk,rst_n,wr_en,rd_en,buf_in,buf_out,buf_empty,buf_full,fifo_cnt);
 	
 	always #10 clk = ~clk;
 	
