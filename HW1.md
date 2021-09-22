@@ -50,9 +50,10 @@ As shown above, at 30ns, buf_in is 1, the fifo get the data and the fifo_cnt bec
 
 + Submit method
 	1. Send an email to TA (xinzhe.liu@nyu.edu) with the compressed package as an attachment.
-	2. The title of email MUST start with "[ECE-GY 6483]". For example: "[ECE-GY 6483] Submission of the first homework."
+	2. The title of email **MUST** start with "[ECE-GY 6483]". For example: "[ECE-GY 6483] Submission of the first homework."
 	
 + Deadline
 	1. Deadline at 6 pm on September 22, 2021.
 	2. Late submission within 48 hours will only get 80% of the score for this homework. For example, if your score for this homework is 80, then only 64 will be entered into the total score.
 	3. All points will be lost if you are late for more than 48 hours.
+	4. Because of the inconsistent Verilog skill level of the students, the deadline can be graced to September 26. Students who wish to get the extension should send an email to TA’s mailbox before 6:00 pm on September 23. To prove your efforts to improve Verilog skills, a screenshot should be included in the email. The screenshot contains the information that you have completed the first two topics of [HDLBits](https://hdlbits.01xz.net/wiki/Step_one). 
