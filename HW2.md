@@ -76,7 +76,7 @@ https://blog.csdn.net/chief_cf/article/details/52373831
 	2. The title of email **MUST** start with "[ECE-GY 6483][HW2]". For example: "[ECE-GY 6483][HW2] Submission from Liu Xin'zhe."
 
 + Deadline
-	1. Deadline at 6 pm on September 29, 2021.
+	1. Deadline at 6 pm on October 3, 2021.
 	2. Late submission within 48 hours will only get 80% of the score for this homework. For example, if your score for this homework is 80, then only 64 will be entered into the total score.
 	3. All points will be lost if you are late for more than 48 hours.
 
