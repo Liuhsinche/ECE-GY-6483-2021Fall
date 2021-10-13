@@ -55,16 +55,15 @@ https://blog.csdn.net/chief_cf/article/details/52373831
     5. In this lab, the vending machine and the debouncing module is require to be implemented seperately, you can also combine them together and write a testbench for it.\
 + All the pictures should be packaged in a pdf file. All of these files should be compressed in zip format and renamed as this: 
 	
-		ECE_GY_6483.HW1.[Name].[ID].zip
+		ECE_GY_6483.HW2.[Name].[ID].zip
 	
-
 + For example, the zip file name is: 
 	
-		ECE_GY_6483.HW1.XinzheLiu.N12209886.zip
+		ECE_GY_6483.HW2.XinzheLiu.N12209886.zip
 
 + File Organization Schema in Package:
 
-        ECE_GY_6483.HW1.[Name].[ID].zip
+        ECE_GY_6483.HW2.[Name].[ID].zip
         ├─ debouncing.v
         └─ debouncing_tb.v
         └─ vending_machine.v
