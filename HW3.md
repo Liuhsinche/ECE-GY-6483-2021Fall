@@ -98,6 +98,6 @@ You can add registers between the datapath of traditional ripple carry adder and
 	2. The title of email **MUST** start with "[ECE-GY 6483][HW3]". For example: "[ECE-GY 6483][HW3] Submission from Liu Xin'zhe."
 
 + Deadline
-	1. Deadline at 6 pm on October 24, 2021.
+	1. Deadline at 6 pm on October 29, 2021.
 	2. Late submission within 48 hours will only get 80% of the score for this homework. For example, if your score for this homework is 80, then only 64 will be entered into the total score.
 	3. All points will be lost if you are late for more than 48 hours.
