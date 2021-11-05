@@ -12,5 +12,4 @@ If there is no special statement, all required documents should be sent to the [
 # Current Task
 + Please finish HW3
 ## Deadline
-+ HW3 need to be submit before 6 pm on October 29, 2021.
-+ HW3.5 don't need to do temporarily.
++ HW3.5 need to be submit before 11 pm on November 10, 2021.
