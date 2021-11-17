@@ -10,6 +10,8 @@ Please open the corresponding markdown file to check the details.
 If there is no special statement, all required documents should be sent to the [TA’s mailbox](mailto:xinzhe.liu@nyu.edu) before the deadline.
 
 # Current Task
-+ Please finish HW3.5
++ Please read [T2](T2.md) and complete the corresponding experiment
++ Please read [T3](T3.md) and complete the corresponding experiment
++ Please finish [HW4](HW4.md)
 ## Deadline
-+ HW3.5 need to be submit before 11 pm on November 10, 2021.
++ HW4 need to be submit before 11 pm on November 24, 2021.
