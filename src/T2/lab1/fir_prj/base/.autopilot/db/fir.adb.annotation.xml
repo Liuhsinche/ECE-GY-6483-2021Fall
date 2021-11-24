@@ -1,0 +1,12 @@
+<annotationInfo>
+<item  id="15" filename="fir.c" linenumber="60" name="sext_ln60" contextFuncName="fir" moduleName="fir" rtlName="sext_ln60_fu_133_p1" latency="0" BRAM="-1" DSP="-1" FF="-1" LUT="-1" fileDirectory="/mnt/liuxzh/courses/ECE_GY_6483/REPO/src/T2/lab1"><\/item>
+<item  id="16" filename="fir.c" linenumber="60" name="tmp" contextFuncName="fir" moduleName="fir" rtlName="tmp_fu_137_p3" latency="0" BRAM="-1" DSP="-1" FF="-1" LUT="-1" fileDirectory="/mnt/liuxzh/courses/ECE_GY_6483/REPO/src/T2/lab1"><\/item>
+<item  id="21" filename="fir.c" linenumber="61" name="icmp_ln61" contextFuncName="fir" moduleName="fir" rtlName="icmp_ln61_fu_145_p2" latency="0" BRAM="-1" DSP="-1" FF="0" LUT="11" fileDirectory="/mnt/liuxzh/courses/ECE_GY_6483/REPO/src/T2/lab1"><\/item>
+<item  id="24" filename="fir.c" linenumber="65" name="add_ln65" contextFuncName="fir" moduleName="fir" rtlName="grp_fu_126_p2" latency="0" BRAM="-1" DSP="-1" FF="0" LUT="15" fileDirectory="/mnt/liuxzh/courses/ECE_GY_6483/REPO/src/T2/lab1"><\/item>
+<item  id="25" filename="fir.c" linenumber="65" name="zext_ln65" contextFuncName="fir" moduleName="fir" rtlName="zext_ln65_fu_151_p1" latency="0" BRAM="-1" DSP="-1" FF="-1" LUT="-1" fileDirectory="/mnt/liuxzh/courses/ECE_GY_6483/REPO/src/T2/lab1"><\/item>
+<item  id="28" filename="fir.c" linenumber="65" name="zext_ln65_1" contextFuncName="fir" moduleName="fir" rtlName="zext_ln65_1_fu_156_p1" latency="0" BRAM="-1" DSP="-1" FF="-1" LUT="-1" fileDirectory="/mnt/liuxzh/courses/ECE_GY_6483/REPO/src/T2/lab1"><\/item>
+<item  id="37" filename="fir.c" linenumber="68" name="zext_ln68" contextFuncName="fir" moduleName="fir" rtlName="zext_ln68_fu_160_p1" latency="0" BRAM="-1" DSP="-1" FF="-1" LUT="-1" fileDirectory="/mnt/liuxzh/courses/ECE_GY_6483/REPO/src/T2/lab1"><\/item>
+<item  id="40" filename="fir.c" linenumber="68" name="mul_ln68" contextFuncName="fir" moduleName="fir" rtlName="fir_mul_32s_32s_3bkb_U1" latency="6" BRAM="-1" DSP="-1" FF="-1" LUT="-1" fileDirectory="/mnt/liuxzh/courses/ECE_GY_6483/REPO/src/T2/lab1"><\/item>
+<item  id="41" filename="fir.c" linenumber="68" name="acc" contextFuncName="fir" moduleName="fir" rtlName="acc_fu_169_p2" latency="0" BRAM="-1" DSP="-1" FF="0" LUT="39" fileDirectory="/mnt/liuxzh/courses/ECE_GY_6483/REPO/src/T2/lab1"><\/item>
+<item  id="42" filename="fir.c" linenumber="60" name="i" contextFuncName="fir" moduleName="fir" rtlName="grp_fu_126_p2" latency="0" BRAM="-1" DSP="-1" FF="0" LUT="15" fileDirectory="/mnt/liuxzh/courses/ECE_GY_6483/REPO/src/T2/lab1"><\/item>
+</annotationInfo>

@@ -1,0 +1,21 @@
+   Build using "/tools/Xilinx/Vivado/2019.2/tps/lnx64/gcc-6.2.0/bin/g++"
+   Compiling apatb_fir.cpp
+   Compiling (apcc) fir.c_pre.c.tb.c
+INFO: [HLS 200-10] Running '/tools/Xilinx/Vivado/2019.2/bin/unwrapped/lnx64.o/apcc'
+INFO: [HLS 200-10] For user 'liuxzh' on host 'SARS-AORUS' (Linux_x86_64 version 5.3.0-1036-gke) on Wed Nov 24 16:23:49 CST 2021
+INFO: [HLS 200-10] On os Ubuntu 18.04.6 LTS
+INFO: [HLS 200-10] In directory '/mnt/liuxzh/courses/ECE_GY_6483/REPO/src/T2/lab1/fir_prj/base/sim/wrapc'
+clang: warning: argument unused during compilation: '-fno-builtin-isinf'
+clang: warning: argument unused during compilation: '-fno-builtin-isnan'
+INFO: [APCC 202-3] Tmp directory is /tmp/apcc_db_liuxzh/190971637742229849588
+INFO: [APCC 202-1] APCC is done.
+   Compiling (apcc) fir_test.c_pre.c.tb.c
+INFO: [HLS 200-10] Running '/tools/Xilinx/Vivado/2019.2/bin/unwrapped/lnx64.o/apcc'
+INFO: [HLS 200-10] For user 'liuxzh' on host 'SARS-AORUS' (Linux_x86_64 version 5.3.0-1036-gke) on Wed Nov 24 16:23:55 CST 2021
+INFO: [HLS 200-10] On os Ubuntu 18.04.6 LTS
+INFO: [HLS 200-10] In directory '/mnt/liuxzh/courses/ECE_GY_6483/REPO/src/T2/lab1/fir_prj/base/sim/wrapc'
+clang: warning: argument unused during compilation: '-fno-builtin-isinf'
+clang: warning: argument unused during compilation: '-fno-builtin-isnan'
+INFO: [APCC 202-3] Tmp directory is /tmp/apcc_db_liuxzh/192951637742235852195
+INFO: [APCC 202-1] APCC is done.
+   Generating cosim.tv.exe

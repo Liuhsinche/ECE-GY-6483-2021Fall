@@ -90,7 +90,7 @@ end
 
 + File Organization Schema in Package:
 
-        EE216_HW3.5_[Name][ID].zip
+        ECE_GY_6483.HW3.5.[Name].[ID].zip
         ├─ MUL.v
         ├─ FSM.v
         ├─ ADD.v

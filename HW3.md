@@ -88,7 +88,7 @@ You can add registers between the datapath of traditional ripple carry adder and
 
 + File Organization Schema in Package:
 
-        EE216_HW3_[Name][ID].zip
+        ECE_GY_6483.HW3.[Name].[ID].zip
         ├─ FIR.v
         └─ MultiCycleAdder.v
         └─ picture.pdf

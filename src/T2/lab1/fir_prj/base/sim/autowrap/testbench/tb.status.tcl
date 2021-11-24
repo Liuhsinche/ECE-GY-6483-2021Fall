@@ -1,0 +1,1 @@
+set ::AESL_AUTOSIM::gTopFileName /mnt/liuxzh/courses/ECE_GY_6483/REPO/src/T2/lab1/fir_prj/base/./sim/autowrap/testbench/fir.c_pre.c.tb.c

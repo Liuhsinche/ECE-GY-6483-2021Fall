@@ -1,0 +1,104 @@
+
+****** Vivado(TM) HLS - High-Level Synthesis from C, C++ and SystemC v2019.2 (64-bit)
+  **** SW Build 2708876 on Wed Nov  6 21:39:14 MST 2019
+  **** IP Build 2700528 on Thu Nov  7 00:09:20 MST 2019
+    ** Copyright 1986-2019 Xilinx, Inc. All Rights Reserved.
+
+source /tools/Xilinx/Vivado/2019.2/scripts/vivado_hls/hls.tcl -notrace
+INFO: [HLS 200-10] Running '/tools/Xilinx/Vivado/2019.2/bin/unwrapped/lnx64.o/vivado_hls'
+INFO: [HLS 200-10] For user 'liuxzh' on host 'SARS-AORUS' (Linux_x86_64 version 5.3.0-1036-gke) on Wed Nov 24 16:23:31 CST 2021
+INFO: [HLS 200-10] On os Ubuntu 18.04.6 LTS
+INFO: [HLS 200-10] In directory '/mnt/liuxzh/courses/ECE_GY_6483/REPO/src/T2/lab1'
+Sourcing Tcl script 'run_hls.tcl'
+INFO: [HLS 200-10] Creating and opening project '/mnt/liuxzh/courses/ECE_GY_6483/REPO/src/T2/lab1/fir_prj'.
+INFO: [HLS 200-10] Adding design file 'fir.c' to the project
+INFO: [HLS 200-10] Adding test bench file 'fir_test.c' to the project
+INFO: [HLS 200-10] Creating and opening solution '/mnt/liuxzh/courses/ECE_GY_6483/REPO/src/T2/lab1/fir_prj/base'.
+INFO: [HLS 200-10] Setting target device to 'xc7k160t-fbg484-1'
+INFO: [SYN 201-201] Setting up clock 'default' with a period of 3.333ns.
+INFO: [SCHED 204-61] Option 'relax_ii_for_timing' is enabled, will increase II to preserve clock frequency constraints.
+INFO: [HLS 200-10] Analyzing design file 'fir.c' ... 
+INFO: [HLS 200-111] Finished Linking Time (s): cpu = 00:00:08 ; elapsed = 00:00:09 . Memory (MB): peak = 1064.645 ; gain = 526.211 ; free physical = 36649 ; free virtual = 79191
+INFO: [HLS 200-111] Finished Checking Pragmas Time (s): cpu = 00:00:08 ; elapsed = 00:00:09 . Memory (MB): peak = 1064.645 ; gain = 526.211 ; free physical = 36649 ; free virtual = 79191
+INFO: [HLS 200-10] Starting code transformations ...
+INFO: [HLS 200-111] Finished Standard Transforms Time (s): cpu = 00:00:09 ; elapsed = 00:00:10 . Memory (MB): peak = 1064.645 ; gain = 526.211 ; free physical = 36636 ; free virtual = 79183
+INFO: [HLS 200-10] Checking synthesizability ...
+INFO: [HLS 200-111] Finished Checking Synthesizability Time (s): cpu = 00:00:09 ; elapsed = 00:00:10 . Memory (MB): peak = 1064.645 ; gain = 526.211 ; free physical = 36635 ; free virtual = 79182
+INFO: [HLS 200-111] Finished Pre-synthesis Time (s): cpu = 00:00:09 ; elapsed = 00:00:10 . Memory (MB): peak = 1064.645 ; gain = 526.211 ; free physical = 36618 ; free virtual = 79166
+INFO: [HLS 200-472] Inferring partial write operation for 'shift_reg' (fir.c:62:4)
+INFO: [HLS 200-472] Inferring partial write operation for 'shift_reg' (fir.c:65:4)
+INFO: [HLS 200-111] Finished Architecture Synthesis Time (s): cpu = 00:00:09 ; elapsed = 00:00:10 . Memory (MB): peak = 1064.645 ; gain = 526.211 ; free physical = 36624 ; free virtual = 79173
+INFO: [HLS 200-10] Starting hardware synthesis ...
+INFO: [HLS 200-10] Synthesizing 'fir' ...
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'fir' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111]  Elapsed time: 9.88 seconds; current allocated memory: 123.553 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111]  Elapsed time: 0.03 seconds; current allocated memory: 123.837 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'fir' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-500] Setting interface mode on port 'fir/y' to 'ap_vld'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'fir/c' to 'ap_memory'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'fir/x' to 'ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on function 'fir' to 'ap_ctrl_hs'.
+INFO: [SYN 201-210] Renamed object name 'fir_mul_32s_32s_32_7_1' to 'fir_mul_32s_32s_3bkb' due to the length limit 20
+INFO: [RTGEN 206-100] Generating core module 'fir_mul_32s_32s_3bkb': 1 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'fir'.
+INFO: [HLS 200-111]  Elapsed time: 0.02 seconds; current allocated memory: 124.209 MB.
+INFO: [HLS 200-790] **** Loop Constraint Status: All loop constraints were satisfied.
+INFO: [HLS 200-789] **** Estimated Fmax: 350.88 MHz
+INFO: [RTMG 210-282] Generating pipelined core: 'fir_mul_32s_32s_3bkb_MulnS_0'
+INFO: [RTMG 210-278] Implementing memory 'fir_shift_reg_ram (RAM)' using distributed RAMs with power-on initialization.
+INFO: [HLS 200-111] Finished generating all RTL models Time (s): cpu = 00:00:10 ; elapsed = 00:00:11 . Memory (MB): peak = 1064.645 ; gain = 526.211 ; free physical = 36589 ; free virtual = 79145
+INFO: [VHDL 208-304] Generating VHDL RTL for fir.
+INFO: [VLOG 209-307] Generating Verilog RTL for fir.
+INFO: [COSIM 212-47] Using XSIM for RTL simulation.
+INFO: [COSIM 212-14] Instrumenting C test bench ...
+   Build using "/tools/Xilinx/Vivado/2019.2/tps/lnx64/gcc-6.2.0/bin/g++"
+   Compiling apatb_fir.cpp
+   Compiling (apcc) fir.c_pre.c.tb.c
+INFO: [HLS 200-10] Running '/tools/Xilinx/Vivado/2019.2/bin/unwrapped/lnx64.o/apcc'
+INFO: [HLS 200-10] For user 'liuxzh' on host 'SARS-AORUS' (Linux_x86_64 version 5.3.0-1036-gke) on Wed Nov 24 16:23:49 CST 2021
+INFO: [HLS 200-10] On os Ubuntu 18.04.6 LTS
+INFO: [HLS 200-10] In directory '/mnt/liuxzh/courses/ECE_GY_6483/REPO/src/T2/lab1/fir_prj/base/sim/wrapc'
+clang: warning: argument unused during compilation: '-fno-builtin-isinf'
+clang: warning: argument unused during compilation: '-fno-builtin-isnan'
+INFO: [APCC 202-3] Tmp directory is /tmp/apcc_db_liuxzh/190971637742229849588
+INFO: [APCC 202-1] APCC is done.
+   Compiling (apcc) fir_test.c_pre.c.tb.c
+INFO: [HLS 200-10] Running '/tools/Xilinx/Vivado/2019.2/bin/unwrapped/lnx64.o/apcc'
+INFO: [HLS 200-10] For user 'liuxzh' on host 'SARS-AORUS' (Linux_x86_64 version 5.3.0-1036-gke) on Wed Nov 24 16:23:55 CST 2021
+INFO: [HLS 200-10] On os Ubuntu 18.04.6 LTS
+INFO: [HLS 200-10] In directory '/mnt/liuxzh/courses/ECE_GY_6483/REPO/src/T2/lab1/fir_prj/base/sim/wrapc'
+clang: warning: argument unused during compilation: '-fno-builtin-isinf'
+clang: warning: argument unused during compilation: '-fno-builtin-isnan'
+INFO: [APCC 202-3] Tmp directory is /tmp/apcc_db_liuxzh/192951637742235852195
+INFO: [APCC 202-1] APCC is done.
+   Generating cosim.tv.exe
+INFO: [COSIM 212-302] Starting C TB testing ... 
+diff: out.gold.dat: No such file or directory
+Comparing against output data 
+*******************************************
+FAIL: Output DOES NOT match the golden output
+*******************************************
+ERROR: [COSIM 212-359] Aborting co-simulation: C TB simulation failed, nonzero return value '1'.
+ERROR: [COSIM 212-320] C TB testing failed, stop generating test vectors. Please check C TB or re-run cosim.
+ERROR: [COSIM 212-5] *** C/RTL co-simulation file generation failed. ***
+ERROR: [COSIM 212-4] *** C/RTL co-simulation finished: FAIL ***
+command 'ap_source' returned error code
+    while executing
+"source run_hls.tcl"
+    ("uplevel" body line 1)
+    invoked from within
+"uplevel \#0 [list source $arg] "
+
+INFO: [HLS 200-112] Total elapsed time: 29.19 seconds; peak allocated memory: 124.209 MB.
+INFO: [Common 17-206] Exiting vivado_hls at Wed Nov 24 16:24:00 2021...
