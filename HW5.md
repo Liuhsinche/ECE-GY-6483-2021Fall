@@ -24,12 +24,13 @@ In this lab, you are required to
 1. Design a matrix multiplier in SDSoC that support 1024*1024 matrix multiplication.
 2. Guarantee your codes generate the right output. 
 3. Try to optimize the system throughput, which is measured by the total cpu cycle counts. 
+4. For [main.cpp](src/HW5/src/main.cpp), You can only add or modify code between **hw_ctr.start();** and **hw_ctr.stop();**.
 4. Record the problems you encountered as well as the effort to optimize the performance.
 5. Select zcu104 when creating project whose name **MUST** be your student ID.
 
 ## Submit
 + You should submit:
-	1. mmul_accel.cpp & mmult_accel.h (no main.cpp, you **MUST** use the given testbench)
+	1. mmul_accel.cpp, mmult_accel.h and main.cpp
 	2. Report.pdf
 
 + All the pictures should be packaged in a pdf file. All of these files should be compressed in zip format and renamed as this: 
