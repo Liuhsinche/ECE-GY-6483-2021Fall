@@ -49,13 +49,39 @@ You are required to optimize the PWCONV1X1 function and DWCONV3X3 function with 
 - Others: 20' (report writing, interesting ideas...)
 
 ## Submit
-You should submit:
-- all your code
-- all the files in the Release/_sds/reports
-- Report.pdf (The correct result screenshot. The optimization strategies and the problems you encountered. The performance and resources utilization. Your innovations andYour innovations and the significance and far-reaching impact of these innovations. Some necessary descriptions.)
++ You should submit:
+  1. all your code
+  2. all the files in the Release/_sds/reports
+  3. Report.pdf 
+      + The correct result screenshot. 
+      + The optimization strategies and the problems you encountered. 
+      + The performance and resources utilization. 
+      + Your innovations and the significance and far-reaching impact of these innovations.
+      + Some necessary descriptions.)
 
-File Organization Schema in Package:
-EE216_project_[Name][ID].zip
-- src
-- reports
-- Report.pdf
++ All of these files should be compressed in zip format and renamed as this: 
+
+		  ECE_GY_6483.Project.[Name].[ID].zip	
+
++ For example, the zip file name is: 
+
+      ECE_GY_6483.Project.XinzheLiu.N12209886.zip
+
++ File Organization Schema in Package:
+
+      ECE_GY_6483.Project.[Name].[ID].zip
+      ├─ src
+      |   ├─ *.h
+      |   └─ *.cpp
+      ├─ reports
+      |   └─ *.rpt
+      └─ Report.pdf
+
++ Submit method
+	1. Send an email to TA (xinzhe.liu@nyu.edu) with the compressed package as an attachment.
+	2. The title of email **MUST** start with "[ECE-GY 6483][Project]". For example: "[ECE-GY 6483][Project] Submission from Liu Xin'zhe."
+
++ Deadline
+	1. Deadline at 11 pm on December 12, 2021.
+	2. Late submission within 48 hours will only get 80% of the score for this homework. For example, if your score for this homework is 80, then only 64 will be entered into the total score.
+	3. All points will be lost if you are late for more than 48 hours.

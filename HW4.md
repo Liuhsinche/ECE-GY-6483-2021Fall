@@ -115,8 +115,8 @@ you can see from the waveform that the input of the FIR is an impulse, and the o
 
 		ECE_GY_6483.HW4.[Name].[ID].zip\
 		├─ FIR.c\
-		└─ FIR_tb.c\
-		└─ Report.pdf\
+		├─ FIR_tb.c\
+		├─ Report.pdf\
 		└─ Waveform.wcfg
 
 + Submit method
