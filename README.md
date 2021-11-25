@@ -15,5 +15,8 @@ If there is no special statement, all required documents should be sent to the [
 + Please read [T4.3](T4.3.md) and complete the corresponding experiment
 + Please read [T5](T5.md) and complete the corresponding experiment
 + Please finish [HW5](HW5.md)
++ Please read [T6](T6.md) and complete the corresponding experiment
++ Please finish [Project](Project.md)
 ## Deadline
-+ HW4 need to be submit before 11 pm on December 2, 2021.
++ HW5 need to be submit before 11 pm on December 2, 2021.
++ Project need to be submit before 11 pm on December 12, 2021.

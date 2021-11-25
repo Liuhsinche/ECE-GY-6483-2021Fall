@@ -23,7 +23,7 @@ Thus, modify the code to support 1024*1024 matrix multiplication. You can do any
 In this lab, you are required to
 1. Design a matrix multiplier in SDSoC that support 1024*1024 matrix multiplication.
 2. Guarantee your codes generate the right output. 
-3. Try to optimize the system throughput, which is measured by the total cpu cycle counts. 
+3. Try to optimize the system throughput, which is measured by the total cpu cycle counts. (Optional)
 4. For [main.cpp](src/HW5/src/main.cpp), You can only add or modify code between **hw_ctr.start();** and **hw_ctr.stop();**.
 4. Record the problems you encountered as well as the effort to optimize the performance.
 5. Select zcu104 when creating project whose name **MUST** be your student ID.

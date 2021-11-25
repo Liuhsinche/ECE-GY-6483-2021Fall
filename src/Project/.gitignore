@@ -1,0 +1,9 @@
+**/.ipynb_checkpoints
+**/cmake-build-debug
+**/build
+**/.idea/
+*.zip
+*.txt
+*.jpg
+.vscode/
+!CMakeLists.txt
