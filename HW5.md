@@ -29,33 +29,4 @@ In this lab, you are required to
 5. Select zcu104 when creating project whose name **MUST** be your student ID.
 
 ## Submit
-+ You should submit:
-	1. mmul_accel.cpp, mmult_accel.h and main.cpp
-	2. Report.pdf
-
-+ All the pictures should be packaged in a pdf file. All of these files should be compressed in zip format and renamed as this: 
-
-		ECE_GY_6483.HW5.[Name].[ID].zip	
-
-+ For example, the zip file name is: 
-
-        ECE_GY_6483.HW5.XinzheLiu.N12209886.zip
-
-+ File Organization Schema in Package:
-
-		ECE_GY_6483.HW5.[Name].[ID].zip \
-			├─ mmul_accel.cpp \
-			├─ mmult_accel.h \
-			├─ $ID.bit \
-			├─ $ID.hwh \
-			├─ $ID.elf \
-			└─ Report.pdf
-
-+ Submit method
-	1. Send an email to TA (xinzhe.liu@nyu.edu) with the compressed package as an attachment.
-	2. The title of email **MUST** start with "[ECE-GY 6483][HW5]". For example: "[ECE-GY 6483][HW5] Submission from Liu Xin'zhe."
-
-+ Deadline
-	1. Deadline at 11 pm on December 2, 2021.
-	2. Late submission within 48 hours will only get 80% of the score for this homework. For example, if your score for this homework is 80, then only 64 will be entered into the total score.
-	3. All points will be lost if you are late for more than 48 hours.
+HW5 does not need to be submitted.
