@@ -1,3 +1,4 @@
+#pragma warning(disable : 4996)
 #include "SkyNet.h"
 void load_fm(ADT *fm, layer l)
 {

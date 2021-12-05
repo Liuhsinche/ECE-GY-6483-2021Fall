@@ -97,7 +97,7 @@ int main()
 {
 
 	//*************************************init *********************************
-	//printf("init SkyNet \n");
+	printf("init SkyNet \n");
 	WDT32 *weight;
 	BDT8 *biasm;
 	ADT4 *img;
@@ -130,11 +130,11 @@ int main()
 	}
 	//*************************************HLS, Skynet *********************************
 	printf("SkyNet start\n");
-	timeval start, end;
-	gettimeofday(&start, NULL);
+	auto start = std::chrono::high_resolution_clock::now();
 	SkyNet(img, ofm_blob32, weight, biasm);
-	gettimeofday(&end, NULL);
-	printf("SkyNet costs %luus\n", (end.tv_sec - start.tv_sec) * 1000000 + end.tv_usec - start.tv_usec);
+	auto end = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double, std::ratio<1, 1>> time_cost(end - start);
+	printf("SkyNet costs %lf seconds\n", time_cost.count());
 
 	//************************************* check the results*********************************
 	printf("check SkyNet results \n");
