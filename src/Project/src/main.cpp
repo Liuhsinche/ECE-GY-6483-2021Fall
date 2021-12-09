@@ -1,4 +1,3 @@
-#include <chrono>
 #include "SkyNet.h"
 
 static layer config[layer_count] = {
@@ -23,15 +22,15 @@ static layer config[layer_count] = {
 	{"conv13", 40, 20, 96, 40, 20, 32, 1, 1, 0},	 //conv13
 };
 
-float anchor[4] = {1.4940052559648322, 2.3598481287086823, 4.0113013115312155, 5.760873975661669};
-float bbox_m[10] = {26., 24., 14., 15., 62., 23., 25., 11., 12., 63.};
+float anchor[4] = {1.4940052559648322f, 2.3598481287086823f, 4.0113013115312155f, 5.760873975661669f};
+float bbox_m[10] = {52.f, 48.f, 28.f, 30.f, 124.f, 47.f, 52.f, 23.f, 23.f, 125.f};
 
 float sigmoid(float x)
 {
 	return 1 / (1 + exp(-x));
 }
 
-void Compute_BBOX(BDT8 *BBOX)
+void Compute_BBOX(BDT16 *BBOX)
 {
 #define h 20
 #define w 40
@@ -39,13 +38,13 @@ void Compute_BBOX(BDT8 *BBOX)
 	float bbox[4][4];
 	for (int b = 0; b < 4; b++)
 	{
-		bbox_origin[b][0] = BBOX[b].range(31, 0);	 //xs
-		bbox_origin[b][1] = BBOX[b].range(63, 32);	 //ys
-		bbox_origin[b][2] = BBOX[b].range(95, 64);	 //ws
-		bbox_origin[b][3] = BBOX[b].range(127, 96);	 //hs
-		bbox_origin[b][4] = BBOX[b].range(159, 128); //flag
-		bbox_origin[b][5] = BBOX[b].range(191, 160); //x
-		bbox_origin[b][6] = BBOX[b].range(223, 192); //y
+		bbox_origin[b][0] = BBOX[b].range(15, 0);	//xs
+		bbox_origin[b][1] = BBOX[b].range(31, 16);	//ys
+		bbox_origin[b][2] = BBOX[b].range(47, 32);	//ws
+		bbox_origin[b][3] = BBOX[b].range(63, 48);	//hs
+		bbox_origin[b][4] = BBOX[b].range(79, 64);	//flag
+		bbox_origin[b][5] = BBOX[b].range(95, 80);	//x
+		bbox_origin[b][6] = BBOX[b].range(112, 96); //y
 	}
 	for (int b = 0; b < 4; b++)
 	{
@@ -88,9 +87,9 @@ void Compute_BBOX(BDT8 *BBOX)
 			bbox[b][3] = bcy + bh / 2.0; //ymax
 		}
 	}
-	for (int b = 0; b < 1; b++)
+	for (int b = 0; b < 4; b++)
 	{
-		printf("img %d xmin: %d, ymin: %d, xmax: %d, ymax: %d\n", b, int(bbox[b][0] * 640), int(bbox[b][1] * 360), int(bbox[b][2] * 640), int(bbox[b][3] * 360));
+		printf("img %d xmin: %f, ymin: %f, xmax: %f, ymax: %f\n", b, bbox[b][0], bbox[b][1], bbox[b][2], bbox[b][3]);
 	}
 }
 
@@ -100,28 +99,27 @@ int main()
 	//*************************************init *********************************
 	printf("init SkyNet \n");
 	WDT32 *weight;
-	BDT8 *biasm;
+	BDT16 *biasm;
 	ADT4 *img;
 	ADT *data[4];
 	ADT *ofm_blob;
 	ADT32 *ofm_blob32;
 	ADT *ofm[4];
-	SDT *conv[4];
+
 	for (int p = 0; p < 4; p++)
 	{
 		data[p] = (ADT *)sds_alloc(32 * 160 * 320 * sizeof(ADT));
 		ofm[p] = (ADT *)sds_alloc(64 * 320 * 640 * sizeof(ADT));
-		conv[p] = (SDT *)sds_alloc(64 * 320 * 640 * sizeof(SDT));
 	}
 	img = (ADT4 *)sds_alloc(4 * 160 * 320 * sizeof(ADT4));
 	weight = (WDT32 *)sds_alloc(441344 * sizeof(WDT));
-	biasm = (BDT8 *)sds_alloc(860 * sizeof(BDT8));
+	biasm = (BDT16 *)sds_alloc(432 * sizeof(BDT16));
 	ofm_blob32 = (ADT32 *)sds_alloc(32 * fm_all * sizeof(ADT));
 	ofm_blob = (ADT *)sds_alloc(64 * 643 * 323 * sizeof(ADT));
 	//*************************************load data *********************************
 	printf("load parameter\n");
 	load_weight(weight, 441344);
-	load_biasm(biasm, 856);
+	load_biasm(biasm, 6848);
 
 	printf("load image\n");
 	for (int b = 0; b < 4; b++)
@@ -131,48 +129,17 @@ int main()
 	}
 	//*************************************HLS, Skynet *********************************
 	printf("SkyNet start\n");
-	auto start = std::chrono::high_resolution_clock::now();
 	SkyNet(img, ofm_blob32, weight, biasm);
-	auto end = std::chrono::high_resolution_clock::now();
-	std::chrono::duration<double, std::ratio<1, 1>> time_cost(end - start);
-	printf("SkyNet costs %lf seconds\n", time_cost.count());
+	printf("SkyNet finished\n");
 
 	//************************************* check the results*********************************
 	printf("check SkyNet results \n");
-
-	fm_DT32_2_DT(&ofm_blob32[conv1_o], ofm_blob, config[1]);
-	distitch(ofm_blob, ofm, config[1]);
-	for (int p = 0; p < 4; p++)
-	{
-		check_fm(ofm[p], config[1]);
-	}
-
-	fm_DT32_2_DT(&ofm_blob32[conv2_o], ofm_blob, config[2]);
-	distitch(ofm_blob, ofm, config[2]);
-	for (int p = 0; p < 4; p++)
-	{
-		check_fm(ofm[p], config[2]);
-	}
 
 	fm_DT32_2_DT(&ofm_blob32[pool1_o], ofm_blob, config[3]);
 	distitch(ofm_blob, ofm, config[3]);
 	for (int p = 0; p < 4; p++)
 	{
 		check_fm(ofm[p], config[3]);
-	}
-
-	fm_DT32_2_DT(&ofm_blob32[conv3_o], ofm_blob, config[4]);
-	distitch(ofm_blob, ofm, config[4]);
-	for (int p = 0; p < 4; p++)
-	{
-		check_fm(ofm[p], config[4]);
-	}
-
-	fm_DT32_2_DT(&ofm_blob32[conv4_o], ofm_blob, config[5]);
-	distitch(ofm_blob, ofm, config[5]);
-	for (int p = 0; p < 4; p++)
-	{
-		check_fm(ofm[p], config[5]);
 	}
 
 	fm_DT32_2_DT(&ofm_blob32[pool2_o], ofm_blob, config[6]);

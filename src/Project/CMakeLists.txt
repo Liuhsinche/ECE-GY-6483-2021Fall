@@ -3,5 +3,5 @@ project(SkyNet)
 
 set(CMAKE_CXX_STANDARD 14)
 
-include_directories(/tools/Xilinx/Vivado/2019.1/include)
+include_directories(include)
 add_executable(SkyNet src/main.cpp src/SkyNet.cpp src/utils.cpp src/transform.cpp)

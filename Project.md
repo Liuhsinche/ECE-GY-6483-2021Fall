@@ -37,6 +37,10 @@ If you are not familiar with Linux, you can also debug the code in Visual Studio
 You are required to optimize the PWCONV1X1 function and DWCONV3X3 function with systolic array.
 - Guarantee the result is correct;
 - Systolic array of PWCONV1X1 is mandatory;
+- The resources used are within an affordable range; You can use vivado to synthesize your IP to check whether the entire design can be inserted into the predetermined FPGA:
+'''
+vivado -mode batch -source run_rtl.tcl
+'''
 - Any optimizations can be applied to the hardware function SkyNet() to obtain higher performance. (Optional)
 - Record the problems you encountered as well as the effort to optimize the performance.
 - Summarize your optimization route and learning gains.
@@ -51,17 +55,20 @@ You are required to optimize the PWCONV1X1 function and DWCONV3X3 function with 
 ## Submit
 + You should submit:
   1. all your code
-  2. all the files in the Release/_sds/reports
-  3. Report.pdf 
+  2. all the report files.
+  3. The bitstream file and hardware description file by vivado.
+  5. Report.pdf 
       + The correct result screenshot. 
       + The optimization strategies and the problems you encountered. 
       + The performance and resources utilization. 
       + Your innovations and the significance and far-reaching impact of these innovations.
-      + Some necessary descriptions.)
+      + Some necessary descriptions.
+
+  You can run pack_submit.sh in Linux terminal to gather the first three parts.
 
 + All of these files should be compressed in zip format and renamed as this: 
 
-		  ECE_GY_6483.Project.[Name].[ID].zip	
+	      ECE_GY_6483.Project.[Name].[ID].zip	
 
 + For example, the zip file name is: 
 
@@ -70,6 +77,8 @@ You are required to optimize the PWCONV1X1 function and DWCONV3X3 function with 
 + File Organization Schema in Package:
 
       ECE_GY_6483.Project.[Name].[ID].zip
+      ├─ SkyNet.bit
+      ├─ SkyNet.hwh
       ├─ src
       |   ├─ *.h
       |   └─ *.cpp

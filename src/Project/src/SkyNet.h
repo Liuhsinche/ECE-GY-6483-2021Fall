@@ -19,47 +19,45 @@
 #define sds_free free
 #endif
 
-#define na 8
-#define nw 8
-#define nb 19
-#define nm 18
-#define ns 21
-#define qm 262144.0
-typedef int DT;
-
-//#define __AP_INT__
+#define __AP_INT__
 #ifdef __AP_INT__
-typedef int DT;
 typedef ap_uint<8> ADT;
-typedef ap_int<nb> BDT;
-typedef ap_int<8> WDT;
-typedef ap_int<nb> MDT;
-typedef ap_int<ns> SDT;
+typedef ap_int<19> RDT;
+typedef ap_int<16> BDT;
+typedef ap_int<6> WDT;
+typedef ap_int<16> MDT;
 typedef ap_int<256> WDT32;
 typedef ap_int<32> ADT4;
 typedef ap_int<256> ADT32;
-typedef ap_int<1024> SDT32;
-typedef ap_int<256> BDT8;
-typedef ap_int<256> MDT8;
+typedef ap_int<256> BDT16;
+typedef ap_int<256> MDT16;
 #else
 typedef int DT;
 typedef unsigned char ADT;
-typedef int BDT;
+typedef short BDT;
 typedef char WDT;
-typedef int SDT;
-typedef int MDT;
+typedef short MDT;
+typedef int RDT;
 typedef ap_int<256> WDT32;
 typedef ap_int<32> ADT4;
 typedef ap_int<256> ADT32;
-typedef ap_int<1024> SDT32;
-typedef ap_int<256> BDT8;
-typedef ap_int<256> MDT8;
+typedef ap_int<256> BDT16;
+typedef ap_int<256> MDT16;
 #endif
+
+#define na 8
+#define nw 6
+#define nb 16
+#define nm 17
+#define qm 131072.0
+typedef int DT;
 
 #define amin 0
 #define amax 255
-#define smin -1048576
-#define smax 1048575
+#define bmin -32768
+#define bmax 32767
+#define rmax 262143
+#define rmin -262144
 
 #define layer_count 19
 #define check_scale 0.00001
@@ -82,40 +80,36 @@ struct layer
 #define conv10_o 417544
 #define conv11_o 474648
 #define conv12_o 617408
-#define conv1_o 628115
-#define conv2_o 835804
-#define conv3_o 1251182
-#define conv4_o 1356480
-#define fm_all 1514427
+#define fm_all 628115
 
 #define conv1_b 0
-#define conv2_b 8
-#define conv3_b 24
-#define conv4_b 40
-#define conv5_b 64
-#define conv6_b 88
-#define conv7_b 136
-#define conv8_b 184
-#define conv9_b 280
-#define conv10_b 376
-#define conv11_b 504
-#define conv12_b 824
-#define conv13_b 848
+#define conv2_b 4
+#define conv3_b 12
+#define conv4_b 20
+#define conv5_b 32
+#define conv6_b 44
+#define conv7_b 68
+#define conv8_b 92
+#define conv9_b 140
+#define conv10_b 188
+#define conv11_b 252
+#define conv12_b 412
+#define conv13_b 424
 
-#define conv1_m 4
-#define conv2_m 16
-#define conv3_m 32
-#define conv4_m 52
-#define conv5_m 76
-#define conv6_m 112
-#define conv7_m 160
-#define conv8_m 232
-#define conv9_m 328
-#define conv10_m 440
-#define conv11_m 664
-#define conv12_m 836
-#define conv13_m 852
-#define bbox_o 856
+#define conv1_m 2
+#define conv2_m 8
+#define conv3_m 16
+#define conv4_m 26
+#define conv5_m 38
+#define conv6_m 56
+#define conv7_m 80
+#define conv8_m 116
+#define conv9_m 164
+#define conv10_m 220
+#define conv11_m 332
+#define conv12_m 418
+#define conv13_m 426
+#define bbox_o 428
 
 #define conv1_w 0
 #define conv2_w 9
@@ -134,23 +128,25 @@ struct layer
 /**********utils.cpp************/
 void load_fm(ADT *fm, layer l);
 void load_weight(WDT32 *weight, int length);
-void load_biasm(BDT8 *biasm, int length);
+void load_biasm(BDT16 *biasm, int length);
+void check(ADT *result, ADT *golden, int len, layer l);
 void check_fm(ADT *fm, layer l);
+void check_bbox(BDT *bbox, layer l);
+void show_fm(ADT *fm, layer l);
+
+void generate_fm(DT *fm, layer l);
+void generate_weight(DT *weight, layer l);
 
 /**********transform.cpp************/
 void stitch(ADT *ifm[4], ADT *ofm, layer l);
 void distitch(ADT *ifm, ADT *ofm[4], layer l);
 void img_DT_2_DT4(ADT *in, ADT4 *out, layer l, int b);
+void img_DT_2_DT3(ADT *in, ADT *out, layer l, int b);
 void fm_DT_2_DT32(ADT *in, ADT32 *out, layer l);
 void fm_DT32_2_DT(ADT32 *in, ADT *out, layer l);
 void distitch_bbox(BDT *ifm, BDT *ofm[4], layer l);
-/**********SkyNet.h [HW]************/
-void SkyNet(ADT4 *img, ADT32 *fm, WDT32 *weight, BDT8 *biasm);
+void bbox_DT16_2_DT(BDT16 *in, BDT *out, layer l);
 
-/**********operations************/
-void pwconv1x1(DT *ifm, DT *ofm, DT *weight, DT *bias, int relu, layer l);
-void dwconv3x3(DT *ifm, DT *ofm, DT *weight, DT *bias, int relu, layer l);
-void maxpool(DT *ifm, DT *ofm, layer l);
-void concat(DT *ifm1, DT *ifm2, DT *ofm, layer l1, layer l2);
-void reorg(DT *ifm, DT *ofm, layer l);
+/**********SkyNet.h [HW]************/
+void SkyNet(ADT4 *img, ADT32 *fm, WDT32 *weight, BDT16 *biasm);
 #endif

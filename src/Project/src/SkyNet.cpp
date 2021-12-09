@@ -1,4 +1,3 @@
-#pragma warning(disable : 4068)
 #include "SkyNet.h"
 
 static layer config[layer_count] = {
@@ -26,45 +25,44 @@ static layer config[layer_count] = {
 ADT FM1[32][43][83];
 ADT FM2[32][43][83];
 ADT FM3[32][43][83];
-SDT FM4[32][43][83];
+RDT FM4[32][43][83];
 
 WDT WBUF3x3[3][32][3][3];
 WDT WBUF1x1[2][32][32];
 BDT BBUF[3][32];
 MDT MBUF[3][32];
 
-void REORG(ADT32 *ifm, ADT IFM[32][43][83], ap_uint<6> Cx, ap_uint<3> Rx)
+void REORG(ADT32 *ifm, ADT IFM[32][43][83], int Cx, ap_uint<3> Rx)
 {
 #pragma HLS ARRAY_PARTITION variable = IFM dim = 1 complete
     ap_uint<20> ifm_index;
-    for (ap_uint<7> h = 1; h <= 41; h++)
+    for (ap_uint<7> h = 1; h <= 40; h++)
     {
-        for (ap_uint<7> w = 1; w <= 81; w++)
+        for (ap_uint<7> w = 1; w <= 80; w++)
         {
 #pragma HLS LOOP_FLATTEN
 #pragma HLS PIPELINE II = 1
-            if (h != 21 && w != 41)
+            ap_uint<7> _h = h + (h >= 21);
+            ap_uint<7> _w = w + (w >= 41);
+            ap_uint<2> bias_h = (_h >= 22) + (!Rx[1]);
+            ap_uint<2> bias_w = (_w >= 42) + (!Rx[0]);
+            int h_ = 2 * _h - bias_h;
+            int w_ = 2 * _w - bias_w;
+            ap_uint<20> ifm_index = Cx * 83 * 163 + h_ * 163 + w_;
+            ADT32 DATA = ifm[ifm_index];
+            for (ap_uint<7> c = 0; c < 32; c++)
             {
-                ap_uint<2> bias_h = (h >= 22) + (!Rx[1]);
-                ap_uint<2> bias_w = (w >= 42) + (!Rx[0]);
-                ap_uint<10> h_ = 2 * h - bias_h;
-                ap_uint<10> w_ = 2 * w - bias_w;
-                ap_uint<20> ifm_index = Cx * 83 * 163 + h_ * 163 + w_;
-                ADT32 DATA = ifm[ifm_index];
-                for (ap_uint<7> c = 0; c < 32; c++)
-                {
 #pragma HLS UNROLL
-                    IFM[c][h][w] = DATA.range(8 * c + 7, 8 * c);
-                }
+                IFM[c][_h][_w] = DATA.range(8 * c + 7, 8 * c);
             }
         }
     }
 }
 
-BDT clamp_SDT(DT x, SDT min, SDT max)
+BDT clamp_BDT(RDT x, BDT min, BDT max)
 {
 #pragma HLS INLINE
-    DT y;
+    BDT y;
     if (x < min)
         y = min;
     else if (x > max)
@@ -74,23 +72,23 @@ BDT clamp_SDT(DT x, SDT min, SDT max)
     return y;
 }
 
-void DWCONV3X3(ADT IFM[32][43][83], SDT OFM[32][43][83], WDT WBUF3x3[32][3][3])
+void DWCONV3X3(ADT IFM[32][43][83], RDT OFM[32][43][83], WDT WBUF3x3[32][3][3])
 {
-    SDT odata = 0;
+    DT odata = 0;
     for (int c = 0; c < 32; c++)
     {
         for (int h = 1; h < 42; h++)
         {
             for (int w = 1; w < 82; w++)
             {
-
                 for (int i = 0; i < 3; i++)
                 {
                     for (int j = 0; j < 3; j++)
                     {
                         odata = OFM[c][h][w];
                         odata += IFM[c][h + i - 1][w + j - 1] * WBUF3x3[c][i][j];
-                        OFM[c][h][w] = odata;
+                        OFM[c][h][w] = odata > rmax ? RDT(rmax) : odata < rmin ? RDT(rmin)
+                                                                               : RDT(odata);
                     }
                 }
             }
@@ -98,73 +96,61 @@ void DWCONV3X3(ADT IFM[32][43][83], SDT OFM[32][43][83], WDT WBUF3x3[32][3][3])
     }
 }
 
-void PWCONV1X1(ADT IFM[32][43][83], SDT OFM[32][43][83], WDT WBUF1x1[32][32])
+void PWCONV1X1(ADT IFM[32][43][83], RDT OFM[32][43][83], WDT WBUF1x1[32][32])
 {
+    DT odata = 0;
     for (int h = 1; h < 42; h++)
     {
         for (int w = 1; w < 82; w++)
         {
             for (int tm = 0; tm < 32; tm++)
             {
-                DT odatatmp = OFM[tm][h][w];
-                DT odata = 0;
+                odata = OFM[tm][h][w];
                 for (int tn = 0; tn < 32; tn++)
                 {
                     odata += WBUF1x1[tm][tn] * IFM[tn][h][w];
                 }
-                OFM[tm][h][w] = clamp_SDT(odata + odatatmp, smin, smax);
+                OFM[tm][h][w] = odata > rmax ? RDT(rmax) : odata < rmin ? RDT(rmin)
+                                                                        : RDT(odata);
             }
         }
     }
 }
 
-ADT clamp_adt(DT x, ADT min, ADT max)
+ADT MAX(ADT a, ADT b, ADT c, ADT d)
 {
 #pragma HLS INLINE
-    ADT y;
-    if (x < min)
-        y = min;
-    else if (x > max)
-        y = max;
-    else
-        y = x;
-    return y;
+    ADT t1 = a > b ? a : b;
+    ADT t2 = c > d ? c : d;
+    return t1 > t2 ? t1 : t2;
 }
 
-DT ReLU(DT x)
-{
-#pragma HLS INLINE
-    DT y;
-    if (x < 0)
-        y = 0;
-    else
-        y = x;
-    return y;
-}
-
-void ACTIVATION(SDT IFM[32][43][83], ADT OFM[32][43][83], BDT BBUF[32], MDT MBUF[32])
+void ACTIVATION(RDT IFM[32][43][83], ADT OFM[32][43][83], BDT BBUF[32], MDT MBUF[32])
 {
 #pragma HLS INLINE off
 #pragma HLS ARRAY_PARTITION variable = BBUF dim = 1 complete
 #pragma HLS ARRAY_PARTITION variable = MBUF dim = 1 complete
-    DT qy;
-    ADT y;
-    for (int h = 0; h < 43; h++)
+
+    for (int h = 1; h < 42; h++)
     {
-        for (int w = 0; w < 83; w++)
+        for (int w = 1; w < 82; w++)
         {
 #pragma HLS PIPELINE
             for (int c = 0; c < 32; c++)
             {
-                IFM[c][h][w] = IFM[c][h][w] + BBUF[c];
-                IFM[c][h][w] = ReLU(IFM[c][h][w]);
-                qy = IFM[c][h][w] * MBUF[c];
-                qy = qy >> nm;
-                y = clamp_adt(qy, amin, amax);
-                if (h == 0 | h == 42 | w == 0 | w == 82)
-                    OFM[c][h][w] = 0;
-                else
-                    OFM[c][h][w] = y;
+                ap_int<20> qy = IFM[c][h][w] + BBUF[c];
+
+                if (qy < 0)
+                {
+                    qy = 0;
+                }
+
+                qy = (qy * MBUF[c]) >> nm;
+
+                OFM[c][h][w] = qy < amin ? ADT(amin) : qy > amax ? ADT(amax)
+                                                                 : ADT(qy);
+
+                IFM[c][h][w] = 0;
             }
         }
     }
@@ -201,19 +187,16 @@ void Load_WBUF1x1(WDT32 *weight, WDT WBUF1x1[32][32], int Mx, int Nx, int ic)
     }
 }
 
-void Load_BBUF(BDT8 *bias, BDT BBUF[32], int Mx)
+void Load_BBUF(BDT16 *bias, BDT BBUF[32], int Mx)
 {
-#pragma HLS ARRAY_PARTITION variable = BBUF dim = 1 complete
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 2; i++)
     {
+        BDT16 DATA;
+        DATA = bias[Mx * 2 + i];
 #pragma HLS PIPELINE II = 1
-        for (int c = 0; c < 8; c++)
+        for (int c = 0; c < 16; c++)
         {
-#ifdef __AP_INT__
-            BBUF[i * 8 + c] = bias[Mx * 4 + i].range(32 * c + nb - 1, 32 * c);
-#else
-            BBUF[i * 8 + c] = bias[Mx * 4 + i].range(32 * c + 31, 32 * c);
-#endif
+            BBUF[i * 16 + c] = DATA.range(16 * c + 15, 16 * c);
         }
     }
 }
@@ -249,44 +232,6 @@ void Load_FM(ADT32 *ifm, ADT IFM[32][43][83], int Hx, int Wx, int Cx, int ow, in
     }
 }
 
-void Export_CONV(ADT32 *fm, ADT OFM[32][43][83], int Hx, int Wx, int Cx, int ow, int oh)
-{
-    int tile = ow / 80;
-    int h_o, w_o;
-    if (tile)
-    {
-        h_o = Hx * 40 + Hx / tile;
-        w_o = Wx * 80 + Wx / tile;
-    }
-    else
-    {
-        h_o = 0;
-        w_o = 0;
-    }
-    for (int h = 1; h <= 40; h++)
-    {
-        for (int w = 1; w <= 80; w++)
-        {
-#pragma HLS PIPELINE II = 1
-            int fm_index = Cx * (oh * 2 + 3) * (ow * 2 + 3) + (h + h_o) * (ow * 2 + 3) + (w + w_o);
-            ADT32 DATA;
-            for (int c = 0; c < 32; c++)
-            {
-                DATA.range(8 * c + 7, 8 * c) = OFM[c][h][w];
-            }
-            fm[fm_index] = DATA;
-        }
-    }
-}
-
-ADT MAX(ADT a, ADT b, ADT c, ADT d)
-{
-#pragma HLS INLINE
-    ADT t1 = a > b ? a : b;
-    ADT t2 = c > d ? c : d;
-    return t1 > t2 ? t1 : t2;
-}
-
 void POOL(ADT32 *fm, ADT IFM[32][43][83], int Hx, int Wx, int Cx, int ow, int oh)
 {
 #pragma HLS ARRAY_PARTITION variable = IFM dim = 1 complete
@@ -297,7 +242,7 @@ void POOL(ADT32 *fm, ADT IFM[32][43][83], int Hx, int Wx, int Cx, int ow, int oh
     {
         for (int w = 1; w <= 40; w++)
         {
-#pragma HLS PIPELINE II = 1
+#pragma HLS PIPELINE II = 4
             int fm_index = Cx * (oh * 2 + 3) * (ow * 2 + 3) + (h + h_o) * (ow * 2 + 3) + (w + w_o);
             ADT32 DATA;
             for (int c = 0; c < 32; c++)
@@ -327,7 +272,37 @@ void Load_FM1(ADT32 *ifm, ADT IFM[32][43][83], int Cx)
     }
 }
 
-void Export_CONV1(ADT32 *fm, ADT OFM[32][43][83], int Cx)
+void Export_FM(ADT32 *fm, ADT OFM[32][43][83], int Hx, int Wx, int Cx, int ow, int oh)
+{
+    int tile = ow / 80;
+    int h_o, w_o;
+    if (tile)
+    {
+        h_o = Hx * 40 + Hx / tile;
+        w_o = Wx * 80 + Wx / tile;
+    }
+    else
+    {
+        h_o = 0;
+        w_o = 0;
+    }
+    for (int h = 1; h <= 40; h++)
+    {
+        for (int w = 1; w <= 80; w++)
+        {
+#pragma HLS PIPELINE II = 1
+            int fm_index = Cx * (oh * 2 + 3) * (ow * 2 + 3) + (h + h_o) * (ow * 2 + 3) + (w + w_o);
+            ADT32 DATA;
+            for (int c = 0; c < 32; c++)
+            {
+                DATA.range(8 * c + 7, 8 * c) = OFM[c][h][w];
+            }
+            fm[fm_index] = DATA;
+        }
+    }
+}
+
+void Export_FM1(ADT32 *fm, ADT OFM[32][43][83], int Cx)
 {
     for (int h = 0; h < 43; h++)
     {
@@ -363,22 +338,7 @@ void Export_CONV1(ADT32 *fm, ADT OFM[32][43][83], int Cx)
     }
 }
 
-void CLR_FM(SDT FM[32][43][83])
-{
-    for (int h = 0; h < 43; h++)
-    {
-        for (int w = 0; w < 83; w++)
-        {
-#pragma HLS PIPELINE II = 1
-            for (int c = 0; c < 32; c++)
-            {
-                FM[c][h][w] = 0;
-            }
-        }
-    }
-}
-
-void Export_BBOX(BDT8 *bbox, BDT8 BBOX[4])
+void Export_BBOX(BDT16 *bbox, BDT16 BBOX[4])
 {
     for (int i = 0; i < 4; i++)
     {
@@ -387,12 +347,12 @@ void Export_BBOX(BDT8 *bbox, BDT8 BBOX[4])
     }
 }
 
-void Compute_BBOX(SDT OFM[32][43][83], BDT MBUF[32], BDT8 BBOX[4])
+void Compute_BBOX(RDT OFM[32][43][83], BDT MBUF[32], BDT16 BBOX[4])
 {
     int H, W;
     DT conf[2];
-    SDT max[2], h_max[2], w_max[2];
-    SDT xs[4], ys[4], ws[4], hs[4], flag[4], x[4], y[4];
+    RDT max[2], h_max[2], w_max[2];
+    RDT xs, ys, ws, hs, flag, x, y;
 
     for (int b = 0; b < 4; b++)
     {
@@ -418,6 +378,7 @@ void Compute_BBOX(SDT OFM[32][43][83], BDT MBUF[32], BDT8 BBOX[4])
         max[0] = OFM[4][H][W];
         h_max[0] = H;
         w_max[0] = W;
+
         max[1] = OFM[9][H][W];
         h_max[1] = H;
         w_max[1] = W;
@@ -441,35 +402,37 @@ void Compute_BBOX(SDT OFM[32][43][83], BDT MBUF[32], BDT8 BBOX[4])
                 }
             }
         }
+
         conf[0] = max[0] * MBUF[4];
         conf[1] = max[1] * MBUF[9];
         if (conf[1] > conf[0])
         {
-            xs[b] = OFM[5][h_max[1]][w_max[1]];
-            ys[b] = OFM[6][h_max[1]][w_max[1]];
-            ws[b] = OFM[7][h_max[1]][w_max[1]];
-            hs[b] = OFM[8][h_max[1]][w_max[1]];
-            flag[b] = 1;
-            x[b] = w_max[1] - W;
-            y[b] = h_max[1] - H;
+            xs = OFM[5][h_max[1]][w_max[1]];
+            ys = OFM[6][h_max[1]][w_max[1]];
+            ws = OFM[7][h_max[1]][w_max[1]];
+            hs = OFM[8][h_max[1]][w_max[1]];
+            flag = 1;
+            x = w_max[1] - W;
+            y = h_max[1] - H;
         }
         else
         {
-            xs[b] = OFM[0][h_max[0]][w_max[0]];
-            ys[b] = OFM[1][h_max[0]][w_max[0]];
-            ws[b] = OFM[2][h_max[0]][w_max[0]];
-            hs[b] = OFM[3][h_max[0]][w_max[0]];
-            flag[b] = 0;
-            x[b] = w_max[0] - W;
-            y[b] = h_max[0] - H;
+            xs = OFM[0][h_max[0]][w_max[0]];
+            ys = OFM[1][h_max[0]][w_max[0]];
+            ws = OFM[2][h_max[0]][w_max[0]];
+            hs = OFM[3][h_max[0]][w_max[0]];
+            flag = 0;
+            x = w_max[0] - W;
+            y = h_max[0] - H;
         }
-        BBOX[b].range(31, 0) = xs[b];
-        BBOX[b].range(63, 32) = ys[b];
-        BBOX[b].range(95, 64) = ws[b];
-        BBOX[b].range(127, 96) = hs[b];
-        BBOX[b].range(159, 128) = flag[b];
-        BBOX[b].range(191, 160) = x[b];
-        BBOX[b].range(223, 192) = y[b];
+        BBOX[b].range(15, 0) = clamp_BDT(xs, bmin, bmax);
+        BBOX[b].range(31, 16) = clamp_BDT(ys, bmin, bmax);
+        BBOX[b].range(47, 32) = clamp_BDT(ws, bmin, bmax);
+        BBOX[b].range(63, 48) = clamp_BDT(hs, bmin, bmax);
+        BBOX[b].range(79, 64) = clamp_BDT(flag, bmin, bmax);
+        BBOX[b].range(95, 80) = clamp_BDT(x, bmin, bmax);
+        BBOX[b].range(112, 96) = clamp_BDT(y, bmin, bmax);
+        BBOX[b].range(255, 113) = 0;
     }
 }
 
@@ -494,27 +457,26 @@ void Load_IMG(ADT4 *img, ADT IFM[32][43][83], int Hx, int Wx, int b)
     }
 }
 
-void SkyNet(ADT4 *img, ADT32 *fm, WDT32 *weight, BDT8 *biasm)
+void SkyNet(ADT4 *img, ADT32 *fm, WDT32 *weight, BDT16 *biasm)
 {
-#pragma HLS INTERFACE m_axi depth = 204800 port = img offset = slave bundle = img
-#pragma HLS INTERFACE m_axi depth = 1514427 port = fm offset = slave bundle = fm
+#pragma HLS INTERFACE m_axi depth = 204800 port = img offset = slave bundle = fm
+#pragma HLS INTERFACE m_axi depth = 628115 port = fm offset = slave bundle = fm
 #pragma HLS INTERFACE m_axi depth = 13792 port = weight offset = slave bundle = wt
-#pragma HLS INTERFACE m_axi depth = 860 port = biasm offset = slave bundle = bm
+#pragma HLS INTERFACE m_axi depth = 432 port = biasm offset = slave bundle = bm
 #pragma HLS INTERFACE s_axilite register port = return
 
-#pragma HLS ALLOCATION instances = Load_IMG limit = 1 function
 #pragma HLS ALLOCATION instances = PWCONV1x1 limit = 1 function
 #pragma HLS ALLOCATION instances = DWCONV3x3 limit = 1 function
 #pragma HLS ALLOCATION instances = REORG limit = 1 function
 #pragma HLS ALLOCATION instances = POOL limit = 1 function
 #pragma HLS ALLOCATION instances = ACTIVATION limit = 1 function
 #pragma HLS ALLOCATION instances = Load_FM limit = 1 function
-#pragma HLS ALLOCATION instances = Export_CONV limit = 1 function
+#pragma HLS ALLOCATION instances = Export_FM limit = 1 function
 #pragma HLS ALLOCATION instances = Load_FM1 limit = 1 function
-#pragma HLS ALLOCATION instances = Export_CONV1 limit = 1 function
+#pragma HLS ALLOCATION instances = Export_FM1 limit = 1 function
 
     /*********************************DWCONV1+PWCONV1********************************/
-    //std::cout << "DWCONV1+PWCONV1" << std::endl;
+    // std::cout << "DWCONV1+PWCONV1" << std::endl;
     Load_WBUF3x3(weight + conv1_w, WBUF3x3[0], 0);
     Load_BBUF(biasm + conv1_b, BBUF[0], 0);
     Load_BBUF(biasm + conv1_m, MBUF[0], 0);
@@ -559,16 +521,11 @@ void SkyNet(ADT4 *img, ADT32 *fm, WDT32 *weight, BDT8 *biasm)
                         Load_IMG(img, FM2, Hx, Wx + 1, b);
                         DWCONV3X3(FM1, FM4, WBUF3x3[0]);
                         ACTIVATION(FM4, FM1, BBUF[0], MBUF[0]);
-                        CLR_FM(FM4);
-                        Export_CONV(fm + conv1_o, FM1, Hx + H, Wx + W, 0, config[1].ow, config[1].oh);
                         for (int Mx = 0; Mx < 2; Mx++)
                         {
                             PWCONV1X1(FM1, FM4, WBUF1x1[Mx]);
                             ACTIVATION(FM4, FM3, BBUF[1 + Mx], MBUF[1 + Mx]);
-                            CLR_FM(FM4);
-                            Export_CONV(fm + conv2_o, FM3, Hx + H, Wx + W, Mx, config[2].ow, config[2].oh);
                             POOL(fm + pool1_o, FM3, Hx + H, Wx + W, Mx, config[3].ow, config[3].oh);
-                            CLR_FM(FM4);
                         }
                     }
                     else
@@ -576,16 +533,11 @@ void SkyNet(ADT4 *img, ADT32 *fm, WDT32 *weight, BDT8 *biasm)
                         Load_IMG(img, FM1, Hx, Wx + 1, b);
                         DWCONV3X3(FM2, FM4, WBUF3x3[0]);
                         ACTIVATION(FM4, FM2, BBUF[0], MBUF[0]);
-                        CLR_FM(FM4);
-                        Export_CONV(fm + conv1_o, FM2, Hx + H, Wx + W, 0, config[1].ow, config[1].oh);
                         for (int Mx = 0; Mx < 2; Mx++)
                         {
                             PWCONV1X1(FM2, FM4, WBUF1x1[Mx]);
                             ACTIVATION(FM4, FM3, BBUF[1 + Mx], MBUF[1 + Mx]);
-                            CLR_FM(FM4);
-                            Export_CONV(fm + conv2_o, FM3, Hx + H, Wx + W, Mx, config[2].ow, config[2].oh);
                             POOL(fm + pool1_o, FM3, Hx + H, Wx + W, Mx, config[3].ow, config[3].oh);
-                            CLR_FM(FM4);
                         }
                     }
                 }
@@ -593,7 +545,7 @@ void SkyNet(ADT4 *img, ADT32 *fm, WDT32 *weight, BDT8 *biasm)
         }
     }
     /*********************************DWCONV2+PWCONV2********************************/
-    //std::cout << "DWCONV2+PWCONV2" << std::endl;
+    // std::cout << "DWCONV2+PWCONV2" << std::endl;
     Load_WBUF3x3(weight + conv3_w, WBUF3x3[0], 0);
     Load_WBUF3x3(weight + conv3_w, WBUF3x3[1], 1);
     Load_BBUF(biasm + conv3_b, BBUF[0], 0);
@@ -608,14 +560,11 @@ void SkyNet(ADT4 *img, ADT32 *fm, WDT32 *weight, BDT8 *biasm)
                 Load_FM(fm + pool1_o, FM1, Hx, Wx, 0, config[4].ow, config[4].oh);
                 DWCONV3X3(FM1, FM4, WBUF3x3[0]);
                 ACTIVATION(FM4, FM1, BBUF[0], MBUF[0]);
-                Export_CONV(fm + conv3_o, FM1, Hx, Wx, 0, config[4].ow, config[4].oh);
 
-                CLR_FM(FM4);
                 Load_FM(fm + pool1_o, FM2, Hx, Wx, 1, config[4].ow, config[4].oh);
                 DWCONV3X3(FM2, FM4, WBUF3x3[1]);
                 ACTIVATION(FM4, FM2, BBUF[1], MBUF[1]);
-                Export_CONV(fm + conv3_o, FM2, Hx, Wx, 1, config[4].ow, config[4].oh);
-                CLR_FM(FM4);
+
                 for (int Mx = 0; Mx < 3; Mx++)
                 {
                     Load_WBUF1x1(weight + conv4_w, WBUF1x1[0], Mx, 0, config[5].ic);
@@ -626,15 +575,13 @@ void SkyNet(ADT4 *img, ADT32 *fm, WDT32 *weight, BDT8 *biasm)
                     Load_BBUF(biasm + conv4_b, BBUF[2], Mx);
                     Load_BBUF(biasm + conv4_m, MBUF[2], Mx);
                     ACTIVATION(FM4, FM3, BBUF[2], MBUF[2]);
-                    Export_CONV(fm + conv4_o, FM3, Hx, Wx, Mx, config[5].ow, config[5].oh);
                     POOL(fm + pool2_o, FM3, Hx, Wx, Mx, config[6].ow, config[6].oh);
-                    CLR_FM(FM4);
                 }
             }
         }
     }
     /*********************************DWCONV3+PWCONV3********************************/
-    //std::cout << "DWCONV3+PWCONV3" << std::endl;
+    // std::cout << "DWCONV3+PWCONV3" << std::endl;
     Load_WBUF3x3(weight + conv5_w, WBUF3x3[0], 0);
     Load_WBUF3x3(weight + conv5_w, WBUF3x3[1], 1);
     Load_WBUF3x3(weight + conv5_w, WBUF3x3[2], 2);
@@ -652,20 +599,17 @@ void SkyNet(ADT4 *img, ADT32 *fm, WDT32 *weight, BDT8 *biasm)
                 Load_FM(fm + pool2_o, FM1, Hx, Wx, 0, config[7].ow, config[7].oh);
                 DWCONV3X3(FM1, FM4, WBUF3x3[0]);
                 ACTIVATION(FM4, FM1, BBUF[0], MBUF[0]);
-                CLR_FM(FM4);
-                Export_CONV(fm + conv5_o, FM1, Hx, Wx, 0, config[7].ow, config[7].oh);
+                Export_FM(fm + conv5_o, FM1, Hx, Wx, 0, config[7].ow, config[7].oh);
 
                 Load_FM(fm + pool2_o, FM1, Hx, Wx, 1, config[7].ow, config[7].oh);
                 DWCONV3X3(FM1, FM4, WBUF3x3[1]);
                 ACTIVATION(FM4, FM1, BBUF[1], MBUF[1]);
-                CLR_FM(FM4);
-                Export_CONV(fm + conv5_o, FM1, Hx, Wx, 1, config[7].ow, config[7].oh);
+                Export_FM(fm + conv5_o, FM1, Hx, Wx, 1, config[7].ow, config[7].oh);
 
                 Load_FM(fm + pool2_o, FM1, Hx, Wx, 2, config[7].ow, config[7].oh);
                 DWCONV3X3(FM1, FM4, WBUF3x3[2]);
                 ACTIVATION(FM4, FM1, BBUF[2], MBUF[2]);
-                CLR_FM(FM4);
-                Export_CONV(fm + conv5_o, FM1, Hx, Wx, 2, config[7].ow, config[7].oh);
+                Export_FM(fm + conv5_o, FM1, Hx, Wx, 2, config[7].ow, config[7].oh);
             }
         }
     }
@@ -686,37 +630,27 @@ void SkyNet(ADT4 *img, ADT32 *fm, WDT32 *weight, BDT8 *biasm)
                     Load_BBUF(biasm + conv6_b, BBUF[0], Mx);
                     Load_BBUF(biasm + conv6_m, MBUF[0], Mx);
                     ACTIVATION(FM4, FM1, BBUF[0], MBUF[0]);
-                    CLR_FM(FM4);
-                    Export_CONV(fm + conv6_o, FM1, Hx, Wx, Mx, config[8].ow, config[8].oh);
+                    Export_FM(fm + conv6_o, FM1, Hx, Wx, Mx, config[8].ow, config[8].oh);
                     POOL(fm + pool3_o, FM1, Hx, Wx, Mx, config[10].ow, config[10].oh);
-                    CLR_FM(FM4);
                 }
             }
         }
     }
 
     /*********************************DWCONV4+PWCONV4********************************/
-    //std::cout << "DWCONV4+PWCONV4" << std::endl;
+    // std::cout << "DWCONV4+PWCONV4" << std::endl;
     {
-        Load_FM1(fm + pool3_o, FM1, 0);
         for (int Nx = 0; Nx < 6; Nx++)
         {
             Load_WBUF3x3(weight + conv7_w, WBUF3x3[0], Nx);
             Load_BBUF(biasm + conv7_b, BBUF[0], Nx);
             Load_BBUF(biasm + conv7_m, MBUF[0], Nx);
-            if (Nx % 2 == 0)
-            {
-                Load_FM1(fm + pool3_o, FM2, Nx + 1);
-                DWCONV3X3(FM1, FM4, WBUF3x3[0]);
-            }
-            else
-            {
-                Load_FM1(fm + pool3_o, FM1, Nx + 1);
-                DWCONV3X3(FM2, FM4, WBUF3x3[0]);
-            }
+
+            Load_FM1(fm + pool3_o, FM1, Nx);
+            DWCONV3X3(FM1, FM4, WBUF3x3[0]);
+
             ACTIVATION(FM4, FM3, BBUF[0], MBUF[0]);
-            CLR_FM(FM4);
-            Export_CONV1(fm + conv7_o, FM3, Nx);
+            Export_FM1(fm + conv7_o, FM3, Nx);
         }
     }
 
@@ -725,6 +659,7 @@ void SkyNet(ADT4 *img, ADT32 *fm, WDT32 *weight, BDT8 *biasm)
         {
             Load_BBUF(biasm + conv8_b, BBUF[0], Mx);
             Load_BBUF(biasm + conv8_m, MBUF[0], Mx);
+
             Load_FM1(fm + conv7_o, FM1, 0);
             for (int Nx = 0; Nx < 6; Nx++)
             {
@@ -741,13 +676,12 @@ void SkyNet(ADT4 *img, ADT32 *fm, WDT32 *weight, BDT8 *biasm)
                 }
             }
             ACTIVATION(FM4, FM2, BBUF[0], MBUF[0]);
-            CLR_FM(FM4);
-            Export_CONV1(fm + conv8_o, FM2, Mx);
+            Export_FM1(fm + conv8_o, FM2, Mx);
         }
     }
 
     /*********************************DWCONV5+PWCONV5********************************/
-    //std::cout << "DWCONV5+PWCONV5" << std::endl;
+    // std::cout << "DWCONV5+PWCONV5" << std::endl;
     {
         Load_FM1(fm + conv8_o, FM1, 0);
         for (int Nx = 0; Nx < 12; Nx++)
@@ -766,16 +700,15 @@ void SkyNet(ADT4 *img, ADT32 *fm, WDT32 *weight, BDT8 *biasm)
                 DWCONV3X3(FM2, FM4, WBUF3x3[0]);
             }
             ACTIVATION(FM4, FM3, BBUF[0], MBUF[0]);
-            CLR_FM(FM4);
-            Export_CONV1(fm + conv9_o, FM3, Nx);
+            Export_FM1(fm + conv9_o, FM3, Nx);
         }
     }
     {
-        Load_FM1(fm + conv9_o, FM1, 0);
         for (int Mx = 0; Mx < 16; Mx++)
         {
             Load_BBUF(biasm + conv10_b, BBUF[0], Mx);
             Load_BBUF(biasm + conv10_m, MBUF[0], Mx);
+
             Load_FM1(fm + conv9_o, FM1, 0);
             for (int Nx = 0; Nx < 12; Nx++)
             {
@@ -792,12 +725,11 @@ void SkyNet(ADT4 *img, ADT32 *fm, WDT32 *weight, BDT8 *biasm)
                 }
             }
             ACTIVATION(FM4, FM2, BBUF[0], MBUF[0]);
-            CLR_FM(FM4);
-            Export_CONV1(fm + conv10_o, FM2, Mx);
+            Export_FM1(fm + conv10_o, FM2, Mx);
         }
     }
     /*********************************REORG+CONCAT+DWCONV6********************************/
-    //std::cout << "REORG+DWCONV6" << std::endl;
+    // std::cout << "REORG+DWCONV6" << std::endl;
     {
         for (int Nx = 0; Nx < 6; Nx++)
         {
@@ -809,8 +741,7 @@ void SkyNet(ADT4 *img, ADT32 *fm, WDT32 *weight, BDT8 *biasm)
                 Load_BBUF(biasm + conv11_m, MBUF[0], Nx + 6 * Rx);
                 DWCONV3X3(FM1, FM4, WBUF3x3[0]);
                 ACTIVATION(FM4, FM1, BBUF[0], MBUF[0]);
-                CLR_FM(FM4);
-                Export_CONV1(fm + conv11_o, FM1, Nx + 6 * Rx);
+                Export_FM1(fm + conv11_o, FM1, Nx + 6 * Rx);
             }
         }
     }
@@ -833,12 +764,11 @@ void SkyNet(ADT4 *img, ADT32 *fm, WDT32 *weight, BDT8 *biasm)
                 DWCONV3X3(FM2, FM4, WBUF3x3[0]);
             }
             ACTIVATION(FM4, FM3, BBUF[0], MBUF[0]);
-            CLR_FM(FM4);
-            Export_CONV1(fm + conv11_o, FM3, Nx + 24);
+            Export_FM1(fm + conv11_o, FM3, Nx + 24);
         }
     }
     /*********************************PWCONV6********************************/
-    //std::cout << "PWCONV6" << std::endl;
+    // std::cout << "PWCONV6" << std::endl;
     {
         for (int Mx = 0; Mx < 3; Mx++)
         {
@@ -860,13 +790,12 @@ void SkyNet(ADT4 *img, ADT32 *fm, WDT32 *weight, BDT8 *biasm)
             Load_BBUF(biasm + conv12_b, BBUF[0], Mx);
             Load_BBUF(biasm + conv12_m, MBUF[0], Mx);
             ACTIVATION(FM4, FM3, BBUF[0], MBUF[0]);
-            CLR_FM(FM4);
-            Export_CONV1(fm + conv12_o, FM3, Mx);
+            Export_FM1(fm + conv12_o, FM3, Mx);
         }
     }
 
     /*********************************CONV13********************************/
-    //std::cout << "CONV13" << std::endl;
+    // std::cout << "CONV13" << std::endl;
     for (int Nx = 0; Nx < 3; Nx++)
     {
         Load_FM1(fm + conv12_o, FM1, Nx);
@@ -874,8 +803,7 @@ void SkyNet(ADT4 *img, ADT32 *fm, WDT32 *weight, BDT8 *biasm)
         PWCONV1X1(FM1, FM4, WBUF1x1[0]);
     }
     Load_BBUF(biasm + conv13_m, MBUF[0], 0);
-    BDT8 BBOX[4];
+    BDT16 BBOX[4];
     Compute_BBOX(FM4, MBUF[0], BBOX);
     Export_BBOX(biasm + bbox_o, BBOX);
-    CLR_FM(FM4);
 }
