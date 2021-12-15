@@ -19,6 +19,6 @@ config_interface -m_axi_addr64
 config_rtl -reset_level low
 config_rtl -prefix a0_
 
-# csim_design -O
+csim_design -O
 # csynth_design
 # export_design -format ip_catalog

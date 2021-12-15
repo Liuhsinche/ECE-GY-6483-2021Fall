@@ -26,8 +26,8 @@ create_clock -period "300MHz"
 # Simulate the C code 
 # csim_design
 
-csynth_design
-cosim_design -rtl verilog
+# csynth_design
+# cosim_design -rtl verilog
 
-exit
+# exit
 

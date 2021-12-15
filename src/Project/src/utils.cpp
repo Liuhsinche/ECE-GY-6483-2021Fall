@@ -1,3 +1,4 @@
+#pragma warning(disable : 4996)
 #include "SkyNet.h"
 
 void generate_fm(DT* fm, layer l)

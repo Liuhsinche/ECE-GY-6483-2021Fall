@@ -1,3 +1,4 @@
+#pragma warning(disable : 4068)
 #include "SkyNet.h"
 
 static layer config[layer_count] = {
